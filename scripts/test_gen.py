@@ -16,14 +16,20 @@ import slam_service_pb2_grpc
 import numpy as np
 
 
-NUM_POINTS = 10000
+NUM_POINTS = 10
+
+INDICE = 0
 
 # generation du pcd
 def generate_point_clouds():
+    global INDICE
     for i in range(3):  # Envoyer 3 nuages de points
 
         # gen point cloud
-        points_array = np.random.rand(NUM_POINTS, 3) * 10  # 300 points pour l'exemple
+        points_array = np.zeros((NUM_POINTS, 3))  # 300 points pour l'exemple
+            
+        points_array[:,0] = INDICE
+        INDICE += 1
 
         # Créer un PointCloud avec tous les points à envoyer d'un coup
         points = [pointcloud_pb2.Point(x=row[0], y=row[1], z=row[2]) for row in points_array]
@@ -45,7 +51,7 @@ def generate_point_clouds():
 
         # attente simule attente slam
         print("Waiting ... ")
-        time.sleep(1)
+        time.sleep(5)
 
 # definition du client pour envouyer les points
 def run():

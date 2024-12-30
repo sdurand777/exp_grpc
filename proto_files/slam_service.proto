@@ -4,10 +4,10 @@ package IVM.slam;
 import "google/protobuf/empty.proto";
 import "pointcloud.proto";
 
-// service SlamService {
-//   rpc GetPointCloud (google.protobuf.Empty) returns (service PointCloud);
-// }
+// deux services
 service SlamService {
-  rpc GetPointCloud (google.protobuf.Empty) returns (stream PointCloud); // Utilisation correcte
-  rpc ConnectPointCloud (stream PointCloud) returns (google.protobuf.Empty); // Utilisation correcte
+    // service pour recuperer les points du serveur
+    rpc GetPointCloud (google.protobuf.Empty) returns (stream PointCloud); // Utilisation correcte
+    // service pour envoyer les points au serveur
+    rpc ConnectPointCloud (stream PointCloud) returns (google.protobuf.Empty); // Utilisation correcte
 }
