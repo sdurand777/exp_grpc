@@ -1,0 +1,14 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+package IVM.slam;
+
+message Point {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message PointCloud {
+  repeated Point points = 1;
+}
