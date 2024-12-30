@@ -59,26 +59,41 @@ with grpc.insecure_channel(
     scene.scene.add_geometry("PointCloud "+ str(INDICE_CLOUD), pcd, mat)
     INDICE_CLOUD+=1
 
-    def animation_callback():
-        global INDICE_CLOUD
-        print("animation callback")
-        point_cloud_data = []
-        pcd = o3d.geometry.PointCloud()
-
-        all_pcd = []
-
-        print("gathering pcd ...")
+    POINTS = np.array([])
+    
+    def receiver_thread():
+        global POINTS
+        
         for point_cloud in response_iterator:
             print(f"Reçu PointCloud avec {len(point_cloud.points)} points.")
+            point_cloud_data = []
             for point in point_cloud.points:
                 # Ajouter chaque point dans la liste
                 point_cloud_data.append([point.x, point.y, point.z])
             
             # Convertir la liste de points en un tableau numpy
             if point_cloud_data:
-                points_np = np.array(point_cloud_data)
-                print("points_np : ", points_np)
-                print("points shape : \n", points_np.shape)
+                POINTS= np.array(point_cloud_data)
+                print("points_np : ", POINTS)
+                print("points shape : \n", POINTS.shape)
+
+
+    def animation_callback():
+        global INDICE_CLOUD, POINTS
+        print("animation callback")
+        print("POINTS ANIMATION : \n", POINTS)
+        if POINTS.any():
+            pcd = o3d.geometry.PointCloud()
+
+            pcd.points = o3d.utility.Vector3dVector(POINTS)
+
+            scene.scene.add_geometry("PointCloud " + str(INDICE_CLOUD), pcd, mat)
+            INDICE_CLOUD += 1
+            POINTS = np.array([])
+
+            bounds = scene.scene.bounding_box
+            scene.setup_camera(60, bounds, bounds.get_center())
+            scene.scene.show_axes(True)
 
         print("End callback ---")
 
@@ -122,11 +137,16 @@ with grpc.insecure_channel(
             # Poster une mise à jour dans le thread principal
             o3d.visualization.gui.Application.instance.post_to_main_thread(
                     window, animation_callback)
-            time.sleep(10)
+
+            time.sleep(1.0)
 
 # Démarrer un thread pour recevoir et afficher les données
-    thread = threading.Thread(target=update_thread)
-    thread.start()
+    thread_anim = threading.Thread(target=update_thread)
+
+    thread_grpc = threading.Thread(target=receiver_thread)
+
+    thread_anim.start()
+    thread_grpc.start()
 
 # Exécuter l'application Open3D
     app.run()

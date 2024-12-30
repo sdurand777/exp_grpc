@@ -138,7 +138,7 @@ with grpc.insecure_channel(
             # Poster une mise à jour dans le thread principal
             o3d.visualization.gui.Application.instance.post_to_main_thread(
                     window, animation_callback)
-            time.sleep(10)
+            time.sleep(1)
 
 # Démarrer un thread pour recevoir et afficher les données
     thread = threading.Thread(target=update_thread)

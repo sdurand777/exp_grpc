@@ -23,12 +23,13 @@ INDICE = 0
 # generation du pcd
 def generate_point_clouds():
     global INDICE
-    for i in range(3):  # Envoyer 3 nuages de points
+    for i in range(5):  # Envoyer 3 nuages de points
 
         # gen point cloud
         points_array = np.zeros((NUM_POINTS, 3))  # 300 points pour l'exemple
             
         points_array[:,0] = INDICE
+        points_array[:,1] = np.arange(0,NUM_POINTS)
         INDICE += 1
 
         # Créer un PointCloud avec tous les points à envoyer d'un coup
