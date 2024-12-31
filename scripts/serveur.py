@@ -26,7 +26,7 @@ class SlamServiceServicer(slam_service_pb2_grpc.SlamServiceServicer):
         for point_cloud in request_iterator:
             print(f"Reçu un PointCloud avec {len(point_cloud.points)} points.")
             self.point_clouds.append(point_cloud)  # Ajouter les points reçus
-            print("point_clouds stored : ", self.point_clouds)
+            #print("point_clouds stored : ", self.point_clouds)
         print("--------- fin de reception --------")
         return Empty()  # Réponse vide pour confirmer
 
@@ -50,16 +50,18 @@ class SlamServiceServicer(slam_service_pb2_grpc.SlamServiceServicer):
                     #     )
                     #     yield limited_points
                     for point_cloud in self.point_clouds:
+                        print(f"Envoie un PointCloud avec {len(point_cloud.points)} points.")
                         yield point_cloud  # Envoi des points stockés
 
                     print("clean pointcloud deja envoye")
+                    # on supprime
                     self.point_clouds = []
                     # Vous pouvez aussi ajouter un petit délai entre les envois pour éviter de trop solliciter le réseau
-                    time.sleep(1)  # Un délai de 1 seconde avant de renvoyer les points
+                    time.sleep(0.1)  # Un délai de 1 seconde avant de renvoyer les points
                 else:
                     # Attendre un peu avant de vérifier s'il y a de nouveaux points si aucun n'est encore reçu
                     print("wait for new points")
-                    time.sleep(1)
+                    time.sleep(0.1)
         except grpc.RpcError as e:
             print(f"Erreur RPC : {e.code()}, message : {e.details()}")
             context.set_code(grpc.StatusCode.INTERNAL)

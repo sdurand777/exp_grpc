@@ -23,7 +23,7 @@ INDICE = 0
 # generation du pcd
 def generate_point_clouds():
     global INDICE
-    for i in range(5):  # Envoyer 3 nuages de points
+    for i in range(12):  # Envoyer 3 nuages de points
 
         # gen point cloud
         points_array = np.zeros((NUM_POINTS, 3))  # 300 points pour l'exemple
@@ -52,7 +52,7 @@ def generate_point_clouds():
 
         # attente simule attente slam
         print("Waiting ... ")
-        time.sleep(5)
+        time.sleep(1)
 
 # definition du client pour envouyer les points
 def run():

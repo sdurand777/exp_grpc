@@ -57,7 +57,7 @@ with grpc.insecure_channel(
     mat.point_size = 12.0  # Taille des points en pixels
 
     scene.scene.add_geometry("PointCloud "+ str(INDICE_CLOUD), pcd, mat)
-    INDICE_CLOUD+=1
+    #INDICE_CLOUD+=1
 
     POINTS = np.array([])
     
@@ -65,18 +65,45 @@ with grpc.insecure_channel(
         global POINTS
         
         for point_cloud in response_iterator:
+            point_cloud_data = [] # permet de ne pas cumuler le point cloud au cours du temps
             print(f"Reçu PointCloud avec {len(point_cloud.points)} points.")
-            point_cloud_data = []
             for point in point_cloud.points:
                 # Ajouter chaque point dans la liste
                 point_cloud_data.append([point.x, point.y, point.z])
             
             # Convertir la liste de points en un tableau numpy
             if point_cloud_data:
-                POINTS= np.array(point_cloud_data)
-                print("points_np : ", POINTS)
+                new_points = np.array(point_cloud_data)
+                
+                if POINTS.size == 0:
+                    # Si POINTS est vide, initialisez-le
+                    POINTS = new_points
+                else:
+                    # Combinez les points existants et les nouveaux
+                    POINTS = np.append(POINTS, new_points, axis=0) # sera supprime apres affichage
+
+                print("points_np : \n", POINTS)
                 print("points shape : \n", POINTS.shape)
 
+
+
+    COLORS = np.array([ [1,0,0],
+                        [0,1,0],
+                        [0,0,1],
+                        [1,0,1],
+                        [1,1,0],
+                        [0,1,1],
+                        [0,0,0],
+                        [1,1,1],
+                        [1,0,0],
+                        [0,1,0],
+                        [0,0,1],
+                        [1,0,1],
+                        [1,1,0],
+                        [0,1,1],
+                        [0,0,0],
+                        [1,1,1]
+                       ])
 
     def animation_callback():
         global INDICE_CLOUD, POINTS
@@ -86,6 +113,17 @@ with grpc.insecure_channel(
             pcd = o3d.geometry.PointCloud()
 
             pcd.points = o3d.utility.Vector3dVector(POINTS)
+            # Créer un tableau de couleurs (par exemple, toutes les couleurs en rouge)
+            # Les couleurs doivent avoir la même forme que les points, avec des valeurs entre 0 et 1.
+            colors = np.ones_like(POINTS)  # Crée un tableau de 1
+            colors[:, 0] = COLORS[INDICE_CLOUD,0]  # Composante rouge
+            colors[:, 1] = COLORS[INDICE_CLOUD,1]  # Composante verte
+            colors[:, 2] = COLORS[INDICE_CLOUD,2]  # Composante bleue
+            
+            # Assigner les couleurs au nuage de points
+            pcd.colors = o3d.utility.Vector3dVector(colors)
+
+
 
             scene.scene.add_geometry("PointCloud " + str(INDICE_CLOUD), pcd, mat)
             INDICE_CLOUD += 1
@@ -138,7 +176,7 @@ with grpc.insecure_channel(
             o3d.visualization.gui.Application.instance.post_to_main_thread(
                     window, animation_callback)
 
-            time.sleep(1.0)
+            time.sleep(0.1)
 
 # Démarrer un thread pour recevoir et afficher les données
     thread_anim = threading.Thread(target=update_thread)

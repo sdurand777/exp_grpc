@@ -2,9 +2,15 @@
 import os
 import sys
 import grpc
-import open3d as o3d  # Importation de Open3D
+import threading
+import time
+import open3d as o3d
+
+import open3d.visualization.gui as gui
+import open3d.visualization.rendering as rendering
+import open3d.visualization as visualizer
+
 import numpy as np
-from concurrent import futures
 from google.protobuf.empty_pb2 import Empty
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,53 +20,183 @@ sys.path.append(gen_python_path)
 import slam_service_pb2_grpc
 import google.protobuf.empty_pb2
 
-# Fonction pour gérer la réception continue des points 3D
-def run():
-    # Connexion au serveur gRPC
-    with grpc.insecure_channel(
-        'localhost:50051',
-        options=[
-            ('grpc.max_receive_message_length', 50 * 1024 * 1024),  # 50 Mo
-            ('grpc.max_send_message_length', 50 * 1024 * 1024),     # 50 Mo
-        ]
-    ) as channel:
-        # Stub client definition pour accéder aux méthodes du serveur
-        stub = slam_service_pb2_grpc.SlamServiceStub(channel)
 
-        # Appel méthode GetPointCloud pour recevoir des points en continu
-        response_iterator = stub.GetPointCloud(google.protobuf.empty_pb2.Empty())
+# connexion grpc
+with grpc.insecure_channel(
+    'localhost:50051',
+    options=[
+        ('grpc.max_receive_message_length', 50 * 1024 * 1024),  # 50 Mo
+        ('grpc.max_send_message_length', 50 * 1024 * 1024),     # 50 Mo
+    ]
+) as channel:
+    # Stub client definition pour accéder aux méthodes du serveur
+    stub = slam_service_pb2_grpc.SlamServiceStub(channel)
 
-        print("Réception continue des points depuis le serveur...")
-        
-        # Créer un objet PointCloud d'Open3D pour afficher les points
-        point_cloud_data = []
-        pcd = o3d.geometry.PointCloud()
-        
-        # Affichage initial vide
-        vis = o3d.visualization.Visualizer()
-        vis.create_window()
+    # Appel méthode GetPointCloud pour recevoir des points en continu
+    response_iterator = stub.GetPointCloud(google.protobuf.empty_pb2.Empty())
+
+    INDICE_CLOUD = 0
+
+# Initialiser Open3D Application
+    app = o3d.visualization.gui.Application.instance
+    app.initialize()
+    font = gui.FontDescription("serif",point_size=18)
+    app.set_font(gui.Application.DEFAULT_FONT_ID,font)
+
+    window_init = gui.Application.instance.create_window("IVM SLAM", 1200, 800)
+    window = window_init
+    scene = gui.SceneWidget()
+    scene.scene = rendering.Open3DScene(window.renderer)
+    scene.scene.set_background_color(np.asarray([0.7,0.7,0.7,1]))
+
+    window.add_child(scene)
+
+    pcd = o3d.geometry.PointCloud()  # Objet PointCloud d'Open3D
+
+    mat = rendering.MaterialRecord()
+    mat.point_size = 12.0  # Taille des points en pixels
+
+    scene.scene.add_geometry("PointCloud "+ str(INDICE_CLOUD), pcd, mat)
+    #INDICE_CLOUD+=1
+
+    POINTS = np.array([])
+    
+    def receiver_thread():
+        global POINTS
         
         for point_cloud in response_iterator:
-            print(f"Reçu un PointCloud avec {len(point_cloud.points)} points.")
+            point_cloud_data = [] # permet de ne pas cumuler le point cloud au cours du temps
+            print(f"Reçu PointCloud avec {len(point_cloud.points)} points.")
             for point in point_cloud.points:
                 # Ajouter chaque point dans la liste
                 point_cloud_data.append([point.x, point.y, point.z])
             
             # Convertir la liste de points en un tableau numpy
             if point_cloud_data:
-                points_np = np.array(point_cloud_data)
-                pcd.points = o3d.utility.Vector3dVector(points_np)
-
-                # Effacer les points précédents et ajouter les nouveaux
-                vis.clear_geometries()
-                vis.add_geometry(pcd)
+                new_points = np.array(point_cloud_data)
                 
-                # Mettre à jour la fenêtre de visualisation
-                vis.update_geometry(pcd)
-                vis.poll_events()
-                vis.update_renderer()
+                if POINTS.size == 0:
+                    # Si POINTS est vide, initialisez-le
+                    POINTS = new_points
+                else:
+                    # Combinez les points existants et les nouveaux
+                    POINTS = np.append(POINTS, new_points, axis=0) # sera supprime apres affichage
 
-        vis.run()  # Exécuter la visualisation
+                print("points_np : \n", POINTS)
+                print("points shape : \n", POINTS.shape)
 
-if __name__ == '__main__':
-    run()
+
+
+    COLORS = np.array([ [1,0,0],
+                        [0,1,0],
+                        [0,0,1],
+                        [1,0,1],
+                        [1,1,0],
+                        [0,1,1],
+                        [0,0,0],
+                        [1,1,1],
+                        [1,0,0],
+                        [0,1,0],
+                        [0,0,1],
+                        [1,0,1],
+                        [1,1,0],
+                        [0,1,1],
+                        [0,0,0],
+                        [1,1,1]
+                       ])
+
+    def animation_callback():
+        global INDICE_CLOUD, POINTS
+        print("animation callback")
+        print("POINTS ANIMATION : \n", POINTS)
+        if POINTS.any():
+            pcd = o3d.geometry.PointCloud()
+
+            pcd.points = o3d.utility.Vector3dVector(POINTS)
+            # Créer un tableau de couleurs (par exemple, toutes les couleurs en rouge)
+            # Les couleurs doivent avoir la même forme que les points, avec des valeurs entre 0 et 1.
+            colors = np.ones_like(POINTS)  # Crée un tableau de 1
+           
+            colors[:, 0] = np.random.rand() # Composante rouge
+            colors[:, 1] = np.random.rand()  # Composante verte
+            colors[:, 2] = np.random.rand()  # Composante bleue
+ 
+            # Assigner les couleurs au nuage de points
+            pcd.colors = o3d.utility.Vector3dVector(colors)
+
+
+
+            scene.scene.add_geometry("PointCloud " + str(INDICE_CLOUD), pcd, mat)
+            INDICE_CLOUD += 1
+            POINTS = np.array([])
+
+            # bounds = scene.scene.bounding_box
+            # scene.setup_camera(60, bounds, bounds.get_center())
+            # scene.scene.show_axes(True)
+
+        print("End callback ---")
+
+#                 all_pcd.append(points_np)
+#                 if points_np.shape[0] > 100:
+#                     print("Show this shit")
+#                     pcd.points = o3d.utility.Vector3dVector(points_np)
+#                     print("points_np :\n", points_np)
+# #                     points_array = np.random.rand(300, 3) * 10  # 300 points pour l'exemple
+# #                     print("points_array shape : ", points_array.shape)
+# # # Générer des couleurs aléatoires
+# #                     colors_array = np.random.rand(300, 3)  # Une couleur pour chaque point
+# #                     pcd = o3d.geometry.PointCloud()  # Objet PointCloud d'Open3D
+# #                     pcd.points = o3d.utility.Vector3dVector(points_array)
+# #                     pcd.colors = o3d.utility.Vector3dVector(colors_array)
+#
+#                     scene.scene.add_geometry("PointCloud " + str(INDICE_CLOUD), pcd, mat)
+#                     INDICE_CLOUD += 1
+#
+# # Configurer la caméra pour visualiser les points
+#                     bounds = scene.scene.bounding_box
+#                     scene.setup_camera(60, bounds, bounds.get_center())
+#                     scene.scene.show_axes(True)
+#                     return
+
+
+        #
+        # print("---------- Affichage des points") 
+        # 
+        # all_concat = np.concatenate(all_pcd, axis=0)
+        # print("all_concat shape : ", all_concat.shape)
+        # bounds = pcd.get_axis_aligned_bounding_box()
+        # scene.scene.camera.look_at(bounds.get_center(), bounds.get_center() + [0, 0, -1], [0, -1, 0])
+
+
+
+        # thread pour update le pcd
+    def update_thread():
+        while True:
+            print("update thread")
+            # Poster une mise à jour dans le thread principal
+            o3d.visualization.gui.Application.instance.post_to_main_thread(
+                    window, animation_callback)
+
+            time.sleep(0.1)
+
+# Démarrer un thread pour recevoir et afficher les données
+    thread_anim = threading.Thread(target=update_thread)
+
+    thread_grpc = threading.Thread(target=receiver_thread)
+
+    thread_anim.start()
+    thread_grpc.start()
+
+# Exécuter l'application Open3D
+    app.run()
+
+
+
+
+
+
+
+
+
+
+
