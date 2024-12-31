@@ -10,4 +10,8 @@ service SlamService {
     rpc GetPointCloud (google.protobuf.Empty) returns (stream PointCloud); // Utilisation correcte
     // service pour envoyer les points au serveur
     rpc ConnectPointCloud (stream PointCloud) returns (google.protobuf.Empty); // Utilisation correcte
+    // Service pour récupérer les points et la pose du serveur
+    rpc GetPointCloudWithPose (google.protobuf.Empty) returns (stream PointCloudWithPose);
+    // Service pour envoyer les points et la pose au serveur
+    rpc ConnectPointCloudWithPose (stream PointCloudWithPose) returns (google.protobuf.Empty);
 }

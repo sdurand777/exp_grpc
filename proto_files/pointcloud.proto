@@ -8,9 +8,24 @@ message Point {
   double x = 1;
   double y = 2;
   double z = 3;
+  double r = 4;
+  double g = 5;
+  double b = 6;
 }
 
 // liste de points
 message PointCloud {
   repeated Point points = 1;
+}
+
+
+// Message pour transmettre une matrice 4x4 (pose de la caméra)
+message Pose {
+  repeated double matrix = 1; // 16 valeurs pour la matrice 4x4
+}
+
+// Messages combinés pour le PCD et la pose
+message PointCloudWithPose {
+  PointCloud pointCloud = 1;
+  Pose pose = 2;
 }

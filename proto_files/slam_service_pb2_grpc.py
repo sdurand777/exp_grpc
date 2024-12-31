@@ -27,9 +27,7 @@ if _version_not_supported:
 
 
 class SlamServiceStub(object):
-    """service SlamService {
-    rpc GetPointCloud (google.protobuf.Empty) returns (service PointCloud);
-    }
+    """deux services
     """
 
     def __init__(self, channel):
@@ -48,23 +46,47 @@ class SlamServiceStub(object):
                 request_serializer=pointcloud__pb2.PointCloud.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
+        self.GetPointCloudWithPose = channel.unary_stream(
+                '/IVM.slam.SlamService/GetPointCloudWithPose',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=pointcloud__pb2.PointCloudWithPose.FromString,
+                _registered_method=True)
+        self.ConnectPointCloudWithPose = channel.stream_unary(
+                '/IVM.slam.SlamService/ConnectPointCloudWithPose',
+                request_serializer=pointcloud__pb2.PointCloudWithPose.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
 
 
 class SlamServiceServicer(object):
-    """service SlamService {
-    rpc GetPointCloud (google.protobuf.Empty) returns (service PointCloud);
-    }
+    """deux services
     """
 
     def GetPointCloud(self, request, context):
-        """Utilisation correcte
+        """service pour recuperer les points du serveur
+        Utilisation correcte
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ConnectPointCloud(self, request_iterator, context):
-        """Utilisation correcte
+        """service pour envoyer les points au serveur
+        Utilisation correcte
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetPointCloudWithPose(self, request, context):
+        """Service pour récupérer les points et la pose du serveur
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ConnectPointCloudWithPose(self, request_iterator, context):
+        """Service pour envoyer les points et la pose au serveur
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -83,6 +105,16 @@ def add_SlamServiceServicer_to_server(servicer, server):
                     request_deserializer=pointcloud__pb2.PointCloud.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
+            'GetPointCloudWithPose': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetPointCloudWithPose,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=pointcloud__pb2.PointCloudWithPose.SerializeToString,
+            ),
+            'ConnectPointCloudWithPose': grpc.stream_unary_rpc_method_handler(
+                    servicer.ConnectPointCloudWithPose,
+                    request_deserializer=pointcloud__pb2.PointCloudWithPose.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'IVM.slam.SlamService', rpc_method_handlers)
@@ -92,9 +124,7 @@ def add_SlamServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class SlamService(object):
-    """service SlamService {
-    rpc GetPointCloud (google.protobuf.Empty) returns (service PointCloud);
-    }
+    """deux services
     """
 
     @staticmethod
@@ -140,6 +170,60 @@ class SlamService(object):
             target,
             '/IVM.slam.SlamService/ConnectPointCloud',
             pointcloud__pb2.PointCloud.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetPointCloudWithPose(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/IVM.slam.SlamService/GetPointCloudWithPose',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            pointcloud__pb2.PointCloudWithPose.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ConnectPointCloudWithPose(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(
+            request_iterator,
+            target,
+            '/IVM.slam.SlamService/ConnectPointCloudWithPose',
+            pointcloud__pb2.PointCloudWithPose.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,

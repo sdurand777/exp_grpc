@@ -26,7 +26,7 @@ from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__
 from google.protobuf import duration_pb2 as google_dot_protobuf_dot_duration__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10pointcloud.proto\x12\x08IVM.slam\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\"(\n\x05Point\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\t\n\x01z\x18\x03 \x01(\x01\"-\n\nPointCloud\x12\x1f\n\x06points\x18\x01 \x03(\x0b\x32\x0f.IVM.slam.Pointb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10pointcloud.proto\x12\x08IVM.slam\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\"I\n\x05Point\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\t\n\x01z\x18\x03 \x01(\x01\x12\t\n\x01r\x18\x04 \x01(\x01\x12\t\n\x01g\x18\x05 \x01(\x01\x12\t\n\x01\x62\x18\x06 \x01(\x01\"-\n\nPointCloud\x12\x1f\n\x06points\x18\x01 \x03(\x0b\x32\x0f.IVM.slam.Point\"\x16\n\x04Pose\x12\x0e\n\x06matrix\x18\x01 \x03(\x01\"\\\n\x12PointCloudWithPose\x12(\n\npointCloud\x18\x01 \x01(\x0b\x32\x14.IVM.slam.PointCloud\x12\x1c\n\x04pose\x18\x02 \x01(\x0b\x32\x0e.IVM.slam.Poseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,7 +34,11 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'pointcloud_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_POINT']._serialized_start=95
-  _globals['_POINT']._serialized_end=135
-  _globals['_POINTCLOUD']._serialized_start=137
-  _globals['_POINTCLOUD']._serialized_end=182
+  _globals['_POINT']._serialized_end=168
+  _globals['_POINTCLOUD']._serialized_start=170
+  _globals['_POINTCLOUD']._serialized_end=215
+  _globals['_POSE']._serialized_start=217
+  _globals['_POSE']._serialized_end=239
+  _globals['_POINTCLOUDWITHPOSE']._serialized_start=241
+  _globals['_POINTCLOUDWITHPOSE']._serialized_end=333
 # @@protoc_insertion_point(module_scope)
