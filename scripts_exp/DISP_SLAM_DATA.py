@@ -118,6 +118,11 @@ with grpc.insecure_channel(
                 poses_list.append(pose_matrix)
 
             # loop over indices
+
+            print("index_list : \n", list(indexlist.index))
+            print("len(coords_list) : ", len(coords_list))
+
+
             for i, index in enumerate(index_list):
                 COORDS_LIST[index] = coords_list[i]
                 COLORS_LIST[index] = colors_list[i]
@@ -165,9 +170,9 @@ with grpc.insecure_channel(
             # on delete les indices une fois update fait
             LOCAL_INDEX_LIST = []
 
-            bounds = scene.scene.bounding_box
-            scene.setup_camera(60, bounds, bounds.get_center())
-            scene.scene.show_axes(True)
+            # bounds = scene.scene.bounding_box
+            # scene.setup_camera(60, bounds, bounds.get_center())
+            # scene.scene.show_axes(True)
 
         print("--- end callback ---")
 
