@@ -58,7 +58,7 @@ GLOBAL_INDEX_LIST = [] # liste avec toutes les KFs globale
 CAMERA_ACTOR_LIST = {} # dict avec les camera actors
 
 
-
+SHOW_CAMERA = True
 
 
 
@@ -249,8 +249,10 @@ with grpc.insecure_channel(
                 reset_camera.background_color = gui.Color(r=25/255, g=79/255, b=140/255)
 
     def hide_cameras():
+        global SHOW_CAMERA
+        SHOW_CAMERA = False
         # on parcours les indices des KFs pour hides les cameras
-        for ix in GLOBAL_INDEX_LIST:
+        for ix, camera_actor in CAMERA_ACTOR_LIST.items():
             scene.scene.remove_geometry("Camera " + str(ix))
         bounds = scene.scene.bounding_box
         scene.setup_camera(60, bounds, bounds.get_center())
@@ -260,6 +262,8 @@ with grpc.insecure_channel(
 
 
     def show_cameras():
+        global SHOW_CAMERA
+        SHOW_CAMERA = True
         for ix, camera_actor in CAMERA_ACTOR_LIST.items():
             scene.scene.add_geometry("Camera " + str(ix),camera_actor, mat)
 #                scene.get_view_control().rotate(0.0,-900.0)
@@ -416,12 +420,6 @@ with grpc.insecure_channel(
     window.add_child(scene)
     window.add_child(settings_panel)
 
-    pcd = o3d.geometry.PointCloud()  # Objet PointCloud d'Open3D
-
-    mat = rendering.MaterialRecord()
-    mat.point_size = 12.0  # Taille des points en pixels
-
-    scene.scene.add_geometry("PointCloud "+ str(INDICE_CLOUD), pcd, mat)
     #INDICE_CLOUD+=1
 
 
@@ -501,7 +499,7 @@ with grpc.insecure_channel(
 
     def animation_callback():
         # variable global pour afficher
-        global GLOBAL_INDEX_LIST, LOCAL_INDEX_LIST, COORDS_LIST, COLORS_LIST, POSES_LIST, CAMERA_ACTOR_LIST, AUTOTRACK
+        global GLOBAL_INDEX_LIST, LOCAL_INDEX_LIST, COORDS_LIST, COLORS_LIST, POSES_LIST, CAMERA_ACTOR_LIST, AUTOTRACK, SHOW_CAMERA
 
         # on check si on des indices a update en stock
 
@@ -523,7 +521,10 @@ with grpc.insecure_channel(
 
                 cam_actor.transform(POSES_LIST[ix])
                 cam_actor.transform(TRANSFO_CAM)
-                scene.scene.add_geometry("Camera " + str(ix), cam_actor,mat)
+
+                if SHOW_CAMERA:
+                    scene.scene.add_geometry("Camera " + str(ix), cam_actor,material)
+
                 CAMERA_ACTOR_LIST[ix] = cam_actor
 
                 # on update la geometry
@@ -531,7 +532,7 @@ with grpc.insecure_channel(
                 pcd.points = o3d.utility.Vector3dVector(COORDS_LIST[ix])
                 pcd.colors = o3d.utility.Vector3dVector(COLORS_LIST[ix])
 
-                scene.scene.add_geometry("PointCloud " + str(ix), pcd, mat)
+                scene.scene.add_geometry("PointCloud " + str(ix), pcd, material)
 
             # on delete les indices une fois update fait
             LOCAL_INDEX_LIST = []
